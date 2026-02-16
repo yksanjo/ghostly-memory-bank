@@ -1,0 +1,112 @@
+# Ghostly Memory Bank Configuration
+# Local-first terminal memory layer for developers
+
+storage:
+  # Local SQLite database path
+  db_path: "./data/ghostly.db"
+  
+  # Embedding storage (local vectors)
+  vector_dimensions: 1536  # OpenAI ada-002 dimensions
+  index_type: "hnsw"       # Hierarchical Navigable Small World
+
+capture:
+  # Terminal session tracking
+  session_timeout_minutes: 30
+  
+  # Sequence detection window (minutes)
+  sequence_window: 5
+  min_sequence_length: 3
+  
+  # Error detection patterns
+  error_patterns:
+    - "error"
+    - "fail"
+    - "failed"
+    - "exception"
+    - "fatal"
+    - "critical"
+    - "ermission denied"
+    - "not found"
+    - "no such file"
+    - "command not found"
+  
+  # Success patterns (for detecting fixes)
+  success_patterns:
+    - "success"
+    - "done"
+    - "completed"
+    - "passed"
+    - "ok"
+  
+  # Commands to ignore (noise filtering)
+  ignore_commands:
+    - "ls"
+    - "ll"
+    - "la"
+    - "pwd"
+    - "cd"
+    - "clear"
+    - "echo"
+    - "history"
+    - "which"
+    - "whoami"
+    - "date"
+    - "time"
+
+embedding:
+  # Use local embeddings or API
+  provider: "openai"  # or "local"
+  
+  # OpenAI configuration
+  openai_model: "text-embedding-ada-002"
+  
+  # Local embedding model (if provider is "local")
+  local_model: "sentence-transformers"
+  local_model_path: "./models"
+
+retrieval:
+  # Confidence thresholds
+  min_confidence: 0.75
+  
+  # Weighting for confidence calculation
+  weights:
+    semantic_similarity: 0.5
+    project_match: 0.3
+    command_similarity: 0.2
+  
+  # Max memories to retrieve
+  max_memories: 3
+  
+  # Trigger conditions
+  triggers:
+    on_error: true
+    on_repeat_command: true      # Same command within 24h
+    on_project_entry: true       # Entering known project
+    on_branch_change: true
+
+output:
+  # Display format
+  format: "compact"  # or "verbose"
+  
+  # Show suggested commands
+  show_suggestions: true
+  
+  # Max stdout to store (bytes)
+  max_stdout_length: 10000
+  
+  # Max stderr to store (bytes)
+  max_stderr_length: 5000
+
+security:
+  # Local-first: no cloud sync by default
+  local_only: true
+  
+  # Encrypt sensitive data
+  encrypt: false  # Set to true and provide key for encryption
+  
+  # Project exclusion patterns
+  exclude_projects:
+    - "*/node_modules/*"
+    - "*/.git/*"
+    - "*/vendor/*"
+    - "*/venv/*"
