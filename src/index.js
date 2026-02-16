@@ -68,6 +68,9 @@ export { initDatabase, getStats, getRecentEpisodes, searchEpisodes } from './lib
 export { formatMemory, suggestNextCommand } from './lib/retrieval.js';
 export { generateProjectHash, isSignificantEvent } from './lib/episodes.js';
 
+// Export embedding providers
+export { LocalEmbeddingProvider, OpenAIEmbeddingProvider, createEmbeddingProvider, cosineSimilarity } from './embeddings/local-provider.js';
+
 export default {
   initialize,
   capture,
@@ -82,5 +85,6 @@ export default {
   formatMemory,
   suggestNextCommand,
   generateProjectHash,
-  isSignificantEvent
+  isSignificantEvent,
+  createEmbeddingProvider
 };

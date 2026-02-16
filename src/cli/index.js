@@ -7,14 +7,19 @@
 
 import { fileURLToPath } from 'url';
 import path from 'path';
+import fs from 'fs';
 import { loadConfig } from '../lib/config.js';
 import { initDatabase, getStats, searchEpisodes } from '../lib/database.js';
 import { simulateEvent, startWatching, stopWatching, getSessionInfo } from '../lib/event-listener.js';
 import { retrieve, formatMemory } from '../lib/retrieval.js';
 import { generateProjectHash } from '../lib/episodes.js';
+import { RichCLI } from './rich-output.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(path.dirname(__filename));
+
+// Rich CLI output
+const richCLI = new RichCLI();
 
 // Track initialization state
 let initialized = false;
@@ -48,6 +53,7 @@ COMMANDS:
   stats               Show storage statistics
   watch               Start watching terminal sessions
   session             Show current session info
+  shell-integration   Output shell integration script
   help                Show this help message
 
 EXAMPLES:
@@ -56,6 +62,7 @@ EXAMPLES:
   ghostly recall "webpack error"
   ghostly search "git commit"
   ghostly stats
+  ghostly shell-integration  # Add to your .bashrc/.zshrc
 `.trim());
 }
 
@@ -244,6 +251,15 @@ async function main() {
       await ensureInit();
       const info = getSessionInfo();
       console.log(`Session: ${info.sessionId}`);
+      break;
+    case 'shell-integration':
+      // Output shell integration script
+      const shellScript = path.join(__dirname, '..', '..', 'shell-integration.sh');
+      if (fs.existsSync(shellScript)) {
+        console.log(fs.readFileSync(shellScript, 'utf8'));
+      } else {
+        richCLI.error('shell-integration.sh not found');
+      }
       break;
     default:
       console.error(`❌ Unknown command: ${command}`);

@@ -360,12 +360,12 @@ export function getEmbedding(episodeId) {
   stmt.bind([episodeId]);
   
   if (stmt.step()) {
-    const row = obj = stmt.getAsObject();
+    const row = stmt.getAsObject();
     stmt.free();
     
     return {
-      ...obj,
-      vector: JSON.parse(obj.vector)
+      ...row,
+      vector: JSON.parse(row.vector)
     };
   }
   

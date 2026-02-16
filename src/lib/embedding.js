@@ -1,67 +1,34 @@
 /**
  * Ghostly Memory Bank - Embedding Layer
  * Handles embedding generation for terminal episodes
+ * Supports both local (transformers.js) and OpenAI embeddings
  */
 
-import OpenAI from 'openai';
 import { loadConfig } from './config.js';
+import { createEmbeddingProvider, cosineSimilarity as computeCosineSimilarity } from '../embeddings/local-provider.js';
 
-// Simple embedding cache
-const embeddingCache = new Map();
-
-let openaiClient = null;
+// Lazy-loaded providers
+let embeddingProvider = null;
 
 /**
- * Initialize OpenAI client
- * @returns {OpenAI} OpenAI client instance
+ * Get or create the embedding provider based on config
  */
-export function getOpenAIClient() {
-  if (!openaiClient) {
+async function getEmbeddingProvider() {
+  if (!embeddingProvider) {
     const config = loadConfig();
-    const apiKey = process.env.OPENAI_API_KEY;
-    
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY environment variable is required');
-    }
-    
-    openaiClient = new OpenAI({ apiKey });
+    embeddingProvider = await createEmbeddingProvider(config);
   }
-  
-  return openaiClient;
+  return embeddingProvider;
 }
 
 /**
- * Generate embedding for text using OpenAI
+ * Generate embedding for text 
  * @param {string} text - Text to embed
  * @returns {Promise<Array<number>>} Embedding vector
  */
 export async function generateEmbedding(text) {
-  const config = loadConfig();
-  const model = config.embedding.openai_model;
-  
-  // Check cache first
-  const cacheKey = `${model}:${text}`;
-  if (embeddingCache.has(cacheKey)) {
-    return embeddingCache.get(cacheKey);
-  }
-  
-  try {
-    const client = getOpenAIClient();
-    const response = await client.embeddings.create({
-      model: model,
-      input: text
-    });
-    
-    const embedding = response.data[0].embedding;
-    
-    // Cache the result
-    embeddingCache.set(cacheKey, embedding);
-    
-    return embedding;
-  } catch (error) {
-    console.error('Error generating embedding:', error.message);
-    throw error;
-  }
+  const provider = await getEmbeddingProvider();
+  return provider.embed(text);
 }
 
 /**
@@ -112,28 +79,7 @@ export function formatEpisodeForEmbedding(episode) {
  * @returns {number} Similarity score (0-1)
  */
 export function cosineSimilarity(a, b) {
-  if (a.length !== b.length) {
-    throw new Error('Vectors must have the same dimension');
-  }
-  
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-  
-  for (let i = 0; i < a.length; i++) {
-    dotProduct += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
-  }
-  
-  normA = Math.sqrt(normA);
-  normB = Math.sqrt(normB);
-  
-  if (normA === 0 || normB === 0) {
-    return 0;
-  }
-  
-  return dotProduct / (normA * normB);
+  return computeCosineSimilarity(a, b);
 }
 
 /**
@@ -182,19 +128,21 @@ export function commandSimilarity(cmd1, cmd2) {
  * @returns {Promise<Array<Array<number>>>} Array of embedding vectors
  */
 export async function batchGenerateEmbeddings(episodes) {
-  const promises = episodes.map(ep => generateEpisodeEmbedding(ep));
-  return Promise.all(promises);
+  const provider = await getEmbeddingProvider();
+  const texts = episodes.map(ep => formatEpisodeForEmbedding(ep));
+  return provider.embedBatch(texts);
 }
 
 /**
- * Clear embedding cache
+ * Clear embedding cache (if supported)
  */
-export function clearCache() {
-  embeddingCache.clear();
+export async function clearCache() {
+  if (embeddingProvider && typeof embeddingProvider.clearCache === 'function') {
+    embeddingProvider.clearCache();
+  }
 }
 
 export default {
-  getOpenAIClient,
   generateEmbedding,
   generateEpisodeEmbedding,
   formatEpisodeForEmbedding,

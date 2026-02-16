@@ -6,7 +6,8 @@ storage:
   db_path: "./data/ghostly.db"
   
   # Embedding storage (local vectors)
-  vector_dimensions: 1536  # OpenAI ada-002 dimensions
+  # Use 384 for local (all-MiniLM-L6-v2) or 1536 for OpenAI
+  vector_dimensions: 384
   index_type: "hnsw"       # Hierarchical Navigable Small World
 
 capture:
@@ -54,15 +55,19 @@ capture:
     - "time"
 
 embedding:
-  # Use local embeddings or API
-  provider: "openai"  # or "local"
+  # Use local embeddings (works offline, no API key needed!)
+  # Options: "local", "openai"
+  provider: "local"
   
-  # OpenAI configuration
+  # OpenAI configuration (only used if provider is "openai")
   openai_model: "text-embedding-ada-002"
   
   # Local embedding model (if provider is "local")
-  local_model: "sentence-transformers"
+  # Recommended: Xenova/all-MiniLM-L6-v2 (384 dimensions, fast)
+  # Other options: Xenova/paraphrase-multilingual-mpnet-base-v2 (768 dims)
+  local_model: "Xenova/all-MiniLM-L6-v2"
   local_model_path: "./models"
+  batch_size: 32
 
 retrieval:
   # Confidence thresholds
