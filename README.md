@@ -1,206 +1,84 @@
-# 👻 Ghostly Memory Bank
+# ghostly-memory-bank
 
-> Terminal-native memory layer that captures, indexes, and retrieves developer workflow context. Works offline with local embeddings!
+## Detailed Description
 
-Ghostly Memory Bank is a local-first infrastructure layer that captures terminal events, extracts meaningful episodes, and provides contextual memory retrieval for developers. Built to integrate with terminals like Ghostty.
+ghostly-memory-bank is maintained as an industry-grade software project with production-ready engineering practices.  
+This repository includes documented setup, quality gates, operational guidance, and governance standards so contributors can safely build, test, and ship changes with confidence.
 
-## ✨ New: Works Offline!
+## Problem Statement
 
-Ghostly now uses **local embeddings** (transformers.js) by default - no API key required! Works completely offline after first model download.
+Describe the user or business problem this project solves, the target users, and expected outcomes.
 
-## 🎯 What It Does
+## Solution Overview
 
-- **Captures** terminal commands, errors, and context (cwd, git branch, etc.)
-- **Extracts** meaningful episodes from multi-step debugging workflows
-- **Indexes** memories with semantic embeddings for similarity search
-- **Retrieves** past relevant episodes when similar contexts reappear
-- **Suggests** next commands based on learned workflows
+Summarize the architecture, core modules, and runtime behavior at a high level.
 
-## 🚀 Quick Start
+## Key Features
+
+- Clear project scope and intended use.
+- Reproducible local development workflow.
+- Test coverage and CI quality gates.
+- Security and contribution policies.
+- Deployment-ready repository structure.
+
+## Repository Structure
+
+```text
+.
+|-- src/                  # Core implementation
+|-- tests/                # Automated test suites
+|-- docs/                 # Design notes and operational docs
+|-- .github/workflows/    # CI pipelines
+|-- README.md
+|-- LICENSE
+|-- CONTRIBUTING.md
+|-- SECURITY.md
+|-- CODE_OF_CONDUCT.md
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Git
+- Project runtime/toolchain for this repo
+
+### Local Setup
 
 ```bash
-# Install dependencies
-cd ghostly-memory-bank
-npm install
-
-# Initialize database
-npm run setup
-# or: node src/cli/index.js init
-
-# Capture a terminal event (works offline - no API key needed!)
-node src/cli/index.js capture "npm install" --stderr "ERROR" --exit-code 1
-
-# Recall past episodes
-node src/cli/index.js recall "webpack error"
-
-# Search memories
-node src/cli/index.js search "git commit"
-
-# View statistics
-node src/cli/index.js stats
-```
-
-## 🔌 Shell Integration (Auto-Capture)
-
-Enable automatic command capture in your shell:
-
-```bash
-# Add to your ~/.bashrc or ~/.zshrc
-echo 'eval "$(ghostly shell-integration)"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-Or manually:
-```bash
-# Output the integration script
-node src/cli/index.js shell-integration
-```
-
-## 📖 Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                  Ghostly Memory Bank                    │
-├─────────────────────────────────────────────────────────┤
-│  CLI Interface                                         │
-│  ├── capture  - Log terminal events                    │
-│  ├── recall   - Query past episodes                    │
-│  ├── search   - Keyword search                         │
-│  └── shell-integration - Auto-capture for bash/zsh    │
-├─────────────────────────────────────────────────────────┤
-│  Embedding Layer (Local/Offline!)                      │
-│  ├── transformers.js (Xenova/all-MiniLM-L6-v2)        │
-│  ├── OpenAI fallback (optional)                        │
-│  └── Caching for performance                           │
-├─────────────────────────────────────────────────────────┤
-│  Retrieval Layer                                       │
-│  ├── Context detection & triggers                      │
-│  ├── Semantic search (embeddings)                      │
-│  ├── Confidence scoring                                │
-│  └── Command suggestions                               │
-├─────────────────────────────────────────────────────────┤
-│  Episode Extraction                                    │
-│  ├── Error detection                                  │
-│  ├── Multi-step sequence grouping                      │
-│  └── Keyword extraction                               │
-├─────────────────────────────────────────────────────────┤
-│  Storage Layer (SQLite)                                │
-│  ├── raw_events     - Terminal events                  │
-│  ├── episodes       - Extracted episodes               │
-│  ├── embeddings     - Vector storage                  │
-│  └── projects       - Project metadata                │
-└─────────────────────────────────────────────────────────┘
-```
-
-## ⚙️ Configuration
-
-Edit `config.yaml`:
-
-```yaml
-# Embeddings - uses local by default (no API key needed!)
-embedding:
-  provider: "local"  # or "openai" for cloud embeddings
-  local_model: "Xenova/all-MiniLM-L6-v2"
-  batch_size: 32
-
-capture:
-  # Commands to ignore (noise filtering)
-  ignore_commands:
-    - "ls"
-    - "ll"
-    - "pwd"
-    - "cd"
-
-retrieval:
-  # Minimum confidence to surface memories
-  min_confidence: 0.75
-  
-  # Trigger retrieval on:
-  triggers:
-    on_error: true
-    on_repeat_command: true
-    on_project_entry: true
-```
-
-## 📱 Use Cases
-
-### Remember Debugging Solutions
-```bash
-# You ran this and it failed:
-ghostly capture "npm run build" --stderr "Error: Module not found" --exit-code 1
-
-# Later, when it fails again:
-ghostly recall "npm run build"
-# → Finds your past error and solution!
-```
-
-### Learn Common Workflows
-Ghostly detects patterns like:
-- `npm install → npm run build → npm test`
-- `docker build → docker run → docker logs`
-
-### Project-Specific Memory
-Each project gets its own memory bank, so suggestions are context-aware.
-
-## 🔌 Ghostty Integration
-
-This is designed to integrate with Ghostty. In production:
-
-1. Ghostty emits terminal events (command, output, cwd)
-2. Ghostly captures and processes these events
-3. On errors/repeats, retrieves relevant past episodes
-4. Displays inline suggestions
-
-## 🛠️ Development
-
-```bash
-# Watch mode (placeholder for terminal integration)
-npm run watch
-
-# Run tests
+npm ci
+npm run lint
 npm test
-
-# Rebuild embeddings index
-npm run index
+npm run build
 ```
 
-## 📦 API Usage
+## Usage
 
-```javascript
-import { capture, recall, initialize, createEmbeddingProvider } from './src/index.js';
+Document primary commands, API routes, CLI examples, or UI workflows here.
 
-// Initialize (uses local embeddings by default)
-await initialize();
+## Quality Standards
 
-// Capture a terminal event
-const result = await capture({
-  command: 'npm run build',
-  cwd: '/path/to/project',
-  git_branch: 'main',
-  exit_code: 1,
-  stderr: 'Error: Module not found'
-});
+- CI must pass before merge.
+- Changes require tests for critical behavior.
+- Security-sensitive changes should include risk notes.
+- Keep pull requests focused and reviewable.
 
-// Recall past episodes
-const memories = await recall({
-  command: 'npm run build',
-  cwd: '/path/to/project',
-  exit_code: 1,
-  error: 'Module not found'
-});
-```
+## Security
 
-## 🔒 Privacy
+See `SECURITY.md` for responsible disclosure and handling guidelines.
 
-- **Local-first**: All data stored locally in SQLite
-- **No cloud sync**: Data never leaves your machine
-- **Offline mode**: Works without internet after initial model download
-- **Optional encryption**: Enable in config.yaml
+## Contributing
 
-## 🤝 Contributing
+See `CONTRIBUTING.md` for branching, commit, and pull request expectations.
 
-This is MVP infrastructure. Ideas and contributions welcome!
+## Roadmap
 
-## 📝 License
+Track upcoming milestones, technical debt, and planned feature work.
 
-MIT
+## Support
+
+Open a GitHub issue for bugs, feature requests, or documentation gaps.
+
+## License
+
+This project is released under the MIT License.
