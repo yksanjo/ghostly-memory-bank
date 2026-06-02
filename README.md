@@ -1,91 +1,72 @@
 # ghostly-memory-bank
 
-Production-grade project scaffold focused on reliability, maintainability, and fast onboarding.
+Terminal-native memory layer for developers. Ghostly captures your terminal
+command events, groups them into episodes, embeds them as vectors, and lets you
+recall relevant past context (e.g. "how did I fix this error last time?").
+Storage is local-first: a SQLite database (`sql.js`) plus embeddings generated
+**offline by default** with a local model (`Xenova/all-MiniLM-L6-v2`); OpenAI
+embeddings are optional.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/yksanjo/ghostly-memory-bank/ci.yml?branch=main&label=ci)](https://github.com/yksanjo/ghostly-memory-bank/actions)
-![License](https://img.shields.io/github/license/yksanjo/ghostly-memory-bank)
-![Last Commit](https://img.shields.io/github/last-commit/yksanjo/ghostly-memory-bank)
-![Repo Size](https://img.shields.io/github/repo-size/yksanjo/ghostly-memory-bank)
+## Stack
 
-## Detailed Description
+- Node.js (ESM)
+- `sql.js` — local SQLite storage
+- `@xenova/transformers` — local, offline embeddings (OpenAI optional)
+- `simple-git`, `yaml`, `chalk`/`boxen`/`ora` for the CLI
+- Jest for tests
 
-ghostly-memory-bank is maintained as an industry-grade software project with production-ready engineering practices.  
-This repository includes documented setup, quality gates, operational guidance, and governance standards so contributors can safely build, test, and ship changes with confidence.
-
-## Problem Statement
-
-Describe the user or business problem this project solves, the target users, and expected outcomes.
-
-## Solution Overview
-
-Summarize the architecture, core modules, and runtime behavior at a high level.
-
-## Key Features
-
-- Clear project scope and intended use.
-- Reproducible local development workflow.
-- Test coverage and CI quality gates.
-- Security and contribution policies.
-- Deployment-ready repository structure.
-
-## Repository Structure
-
-```text
-.
-|-- src/                  # Core implementation
-|-- tests/                # Automated test suites
-|-- docs/                 # Design notes and operational docs
-|-- .github/workflows/    # CI pipelines
-|-- README.md
-|-- LICENSE
-|-- CONTRIBUTING.md
-|-- SECURITY.md
-|-- CODE_OF_CONDUCT.md
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Git
-- Project runtime/toolchain for this repo
-
-### Local Setup
+## Install
 
 ```bash
 npm ci
-npm run lint
-npm test
-npm run build
+npm run setup   # initialize the database + config
 ```
+
+Configuration lives in `config.yaml`; environment overrides in `.env`
+(copy `.env.example`). An `OPENAI_API_KEY` is only needed if you switch the
+embedding provider to OpenAI — the default is fully local/offline.
 
 ## Usage
 
-Document primary commands, API routes, CLI examples, or UI workflows here.
+The `ghostly` CLI (`src/cli/index.js`) is the entrypoint. npm scripts wrap the
+common subcommands:
 
-## Quality Standards
+```bash
+npm run setup                        # ghostly init  — create DB + config
+npm run capture -- "git push" --exit-code 1 --stderr "rejected"
+npm run retrieve -- "git push failed"  # ghostly recall — find relevant memories
+npm run search -- "docker build"     # keyword search over episodes
+npm run stats                        # storage statistics
+npm run watch                        # watch the current terminal session
+npm start -- help                    # full CLI help
+```
 
-- CI must pass before merge.
-- Changes require tests for critical behavior.
-- Security-sensitive changes should include risk notes.
-- Keep pull requests focused and reviewable.
+You can also run the CLI directly: `node src/cli/index.js <command>` or, once
+linked, `ghostly <command>`.
 
-## Security
+## Project structure
 
-See `SECURITY.md` for responsible disclosure and handling guidelines.
+```text
+src/
+  index.js              # library entrypoint (programmatic API)
+  cli/index.js          # CLI entrypoint + command dispatch
+  cli/rich-output.js    # formatted CLI output
+  lib/config.js         # config loading (config.yaml + env)
+  lib/database.js       # sql.js storage: events, episodes, embeddings
+  lib/event-listener.js # event capture + episode formation
+  lib/episodes.js       # episode heuristics (significance, keywords, hashing)
+  lib/embedding.js      # embedding generation + similarity
+  lib/retrieval.js      # trigger detection + semantic/text recall
+  embeddings/local-provider.js  # local + OpenAI embedding providers
+tests/                  # Jest tests
+```
 
-## Contributing
+## Tests
 
-See `CONTRIBUTING.md` for branching, commit, and pull request expectations.
-
-## Roadmap
-
-Track upcoming milestones, technical debt, and planned feature work.
-
-## Support
-
-Open a GitHub issue for bugs, feature requests, or documentation gaps.
+```bash
+npm test
+```
 
 ## License
 
-This project is released under the MIT License.
+MIT — see `LICENSE`.
