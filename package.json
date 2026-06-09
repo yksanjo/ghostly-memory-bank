@@ -9,11 +9,13 @@
   },
   "scripts": {
     "start": "node src/cli/index.js",
-    "watch": "node src/lib/event-listener.js",
-    "index": "node src/lib/indexer.js",
-    "retrieve": "node src/cli/retrieve.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "setup": "node src/config/setup.js"
+    "setup": "node src/cli/index.js init",
+    "watch": "node src/cli/index.js watch",
+    "capture": "node src/cli/index.js capture",
+    "retrieve": "node src/cli/index.js recall",
+    "search": "node src/cli/index.js search",
+    "stats": "node src/cli/index.js stats",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [
     "terminal",
